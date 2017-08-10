@@ -1,0 +1,24 @@
+{
+  "name": "toystore",
+  "version": "1.0.0",
+  "description": "Lightweight central store of state with the ability to watch for and react to specific property changes",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "keywords": [],
+  "author": "Vance Lucas <vance@vancelucas.com>",
+  "license": {
+    "type": "BSD-3-Clause"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/vlucas/toystore"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "jasmine": "^2.7.0"
+  }
+}
