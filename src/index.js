@@ -103,9 +103,22 @@ function create(defaultState = {}) {
    * @param {Function} callback to execute when there are changes
    */
   function watch(path, callback) {
+    let paths = (path instanceof Array) ? path : [path]; // Ensure paths is always an array
+    let fullPaths = [];
+
+    paths.forEach(p => {
+      if (p.indexOf('.') !== -1) {
+        let pathsWithRoots = p.split('.').map((value, index, array) => array.slice(0, index+1).join('.'));
+
+        fullPaths = fullPaths.concat(pathsWithRoots);
+      } else {
+        fullPaths.push(p);
+      }
+    });
+
     watchers.push({
       callback,
-      paths: (path instanceof Array) ? path : [path], // Ensure paths is always an array
+      paths: fullPaths,
     });
   }
 

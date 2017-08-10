@@ -193,4 +193,18 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
   });
+
+  it('should trigger an update when root key is changed with a watched nested key', () => {
+    let actual = 0;
+
+    store.watch('user.id', () => ++actual);
+    store.set('user', {
+      email: 'bar@baz.com',
+      id: 2,
+    });
+
+    let expected = 1;
+
+    expect(actual).toBe(expected);
+  });
 });
