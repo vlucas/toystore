@@ -58,10 +58,16 @@ function fetchUser() {
 }
 ```
 
+## Usage With React
+
+If you use React and want to bind your React components to automatically
+re-render on store key changes, use the
+ [toystore-react](https://github.com/vlucas/toystore-react) package.
+
 ## API
 
 After you create a store instance using `toystore.create()`, the resulting
-store object ahs the following methods:
+store object has the following methods:
 
 ### get(path)
 
@@ -72,10 +78,12 @@ nesting, i.e. `user.email`.
 store.get('user.email'); // user@example.com
 ```
 
-### getAll(paths)
+### getAll(paths = null)
 
 Returns an object with key/value pairs of all the keys requested. The provided
 `paths` argument must be an array.
+
+If you do not provide any arguments, the entire store object will be returned.
 
 ```javascript
 store.getAll(['is_cool', 'is_quality']); // { is_cool: true, is_quality: true }
