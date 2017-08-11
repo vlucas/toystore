@@ -1,5 +1,6 @@
 'use strict';
 
+const _difference = require('lodash/difference');
 const _get = require('lodash/get');
 const _intersection = require('lodash/intersection');
 const _set = require('lodash/set');
@@ -64,7 +65,16 @@ function create(defaultState = {}) {
 
     // Get all paths to notify for updates if given an object
     if (typeof value === 'object') {
+      let oldKeys = _deepKeys(get(path), path);
+      let removedKeys;
+
       paths = _deepKeys(value, path);
+      removedKeys = _difference(oldKeys, paths);
+
+      // If keys were removed in set, we need to notify those watchers
+      if (removedKeys.length > 0) {
+        paths = paths.concat(removedKeys);
+      }
     }
 
     setSilent(path, value);

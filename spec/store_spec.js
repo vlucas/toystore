@@ -208,6 +208,20 @@ describe('store', () => {
     expect(actual).toBe(expected);
   });
 
+  it('should trigger an update when root key is removed with a watched nested key', () => {
+    let actual = 0;
+
+    store.watch('user.id', () => ++actual);
+    store.set('user', {
+      email: 'bar@baz.com'
+      // id is omitted!
+    });
+
+    let expected = 1;
+
+    expect(actual).toBe(expected);
+  });
+
   it('should trigger an update when nested key is changed with a watched root key', () => {
     let actual = 0;
 
