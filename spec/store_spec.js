@@ -160,7 +160,7 @@ describe('store', () => {
 
       store.watch(['foo', 'user.id'], () => ++actual);
       store.set('foo', 'qux');
-      store.set('user.email', 'user@disposeamail.com');
+      store.set('new_key', 'new_value');
 
       let expected = 1;
 
@@ -204,6 +204,28 @@ describe('store', () => {
     });
 
     let expected = 1;
+
+    expect(actual).toBe(expected);
+  });
+
+  it('should trigger an update when nested key is changed with a watched root key', () => {
+    let actual = 0;
+
+    store.watch('user', () => ++actual);
+    store.set('user.email', 'bar@baz.com');
+
+    let expected = 1;
+
+    expect(actual).toBe(expected);
+  });
+
+  it('should not trigger an update when updating a sibling nested key', () => {
+    let actual = 0;
+
+    store.watch(['user.email'], () => ++actual);
+    store.set('user.id', 2);
+
+    let expected = 0;
 
     expect(actual).toBe(expected);
   });

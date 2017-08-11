@@ -41,8 +41,10 @@ function create(defaultState = {}) {
    * @param {Array} paths
    */
   function notifyWatchersOnPaths(paths) {
+    let expandedPaths = _expandNestedPaths(paths);
+
     watchers.map(watcher => {
-      let hasPath = _intersection(paths, watcher.paths).length > 0;
+      let hasPath = _intersection(expandedPaths, watcher.paths).length > 0;
 
       if (hasPath) {
         watcher.callback(getAll(paths));
@@ -58,8 +60,15 @@ function create(defaultState = {}) {
    * @return null
    */
   function set(path, value) {
+    let paths = _pathsArray(path);
+
+    // Get all paths to notify for updates if given an object
+    if (typeof value === 'object') {
+      paths = _deepKeys(value, path);
+    }
+
     setSilent(path, value);
-    notifyWatchersOnPaths([path]);
+    notifyWatchersOnPaths(paths);
   }
 
   /**
@@ -102,23 +111,12 @@ function create(defaultState = {}) {
    * @param {Array|String} String path or array of paths to watch
    * @param {Function} callback to execute when there are changes
    */
-  function watch(path, callback) {
-    let paths = (path instanceof Array) ? path : [path]; // Ensure paths is always an array
-    let fullPaths = [];
-
-    paths.forEach(p => {
-      if (p.indexOf('.') !== -1) {
-        let pathsWithRoots = p.split('.').map((value, index, array) => array.slice(0, index+1).join('.'));
-
-        fullPaths = fullPaths.concat(pathsWithRoots);
-      } else {
-        fullPaths.push(p);
-      }
-    });
+  function watch(paths, callback) {
+    paths = _pathsArray(paths);
 
     watchers.push({
       callback,
-      paths: fullPaths,
+      paths,
     });
   }
 
@@ -152,6 +150,55 @@ function create(defaultState = {}) {
     unwatch,
     unwatchAll,
   }
+}
+
+// Ensure paths is always an array
+function _pathsArray(paths) {
+  return (paths instanceof Array) ? paths : [paths];
+}
+
+/**
+ * Expand nested path syntax to include root paths as well. Mainly used for
+ * notifications on key updates, so updates on nested keys will notify root
+ * key, and vice-versa.
+ *
+ * Ex: 'user.email' => ['user', 'user.email']
+ *
+ * @param {String|String[]} paths
+ */
+function _expandNestedPaths(paths) {
+  let expandedPaths = [];
+
+  _pathsArray(paths).forEach(p => {
+    if (p.indexOf('.') !== -1) {
+      let pathsWithRoots = p.split('.').map((value, index, array) => array.slice(0, index+1).join('.'));
+
+      expandedPaths = expandedPaths.concat(pathsWithRoots);
+    } else {
+      expandedPaths.push(p);
+    }
+  });
+
+  return expandedPaths;
+}
+
+/**
+ * Get all keys for the given object recursively
+ *
+ * Ex: { user: { email: 'foo@bar.com', id: 2 } } => ['user.email', 'user.id']
+ */
+function _deepKeys(obj, prefix = null) {
+  return Object.keys(obj).reduce(function(acc, key){
+    var value = obj[key];
+
+    if (typeof value === 'object') {
+      acc.push.apply(acc, _deepKeys(value, prefix ? prefix + '.' + key : key));
+    } else {
+      acc.push(prefix ? prefix + '.' + key : key);
+    }
+
+    return acc;
+  }, []);
 }
 
 module.exports = {
