@@ -4,6 +4,10 @@
   "description": "Lightweight central store of state with the ability to watch for and react to specific property changes",
   "main": "src/index.js",
   "scripts": {
+    "build": "npm run package && npm run babel && npm run minify",
+    "package": "./node_modules/browserify/bin/cmd.js src/index.js -o dist/toystore.js",
+    "babel": "./node_modules/babel-cli/bin/babel.js dist/toystore.js --out-file dist/toystore.js",
+    "minify": "./node_modules/uglify-js/bin/uglifyjs dist/toystore.js -o dist/toystore.min.js",
     "test": "jasmine"
   },
   "keywords": [],
@@ -16,9 +20,16 @@
     "url": "http://github.com/vlucas/toystore"
   },
   "dependencies": {
-    "lodash": "^4.17.4"
+    "difference": "^1.0.2",
+    "dot-prop": "^4.2.0",
+    "intersect": "^1.0.1",
+    "lodash.zipobject": "^4.1.3"
   },
   "devDependencies": {
-    "jasmine": "^2.7.0"
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "browserify": "^14.4.0",
+    "jasmine": "^2.7.0",
+    "uglify-js": "^3.0.27"
   }
 }

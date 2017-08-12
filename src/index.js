@@ -1,10 +1,9 @@
 'use strict';
 
-const _difference = require('lodash/difference');
-const _get = require('lodash/get');
-const _intersection = require('lodash/intersection');
-const _set = require('lodash/set');
-const _zipObject = require('lodash/zipObject');
+const dotProp = require('dot-prop');
+const difference = require('difference');
+const intersect = require('intersect');
+const zipObject = require('lodash.zipobject');
 
 function create(defaultState = {}) {
   let state = defaultState;
@@ -17,7 +16,7 @@ function create(defaultState = {}) {
    * @return value
    */
   function get(path) {
-    return _get(state, path);
+    return dotProp.get(state, path);
   }
 
   /**
@@ -33,7 +32,7 @@ function create(defaultState = {}) {
 
     let values = paths.map(get);
 
-    return _zipObject(paths, values);
+    return zipObject(paths, values);
   }
 
   /**
@@ -45,7 +44,7 @@ function create(defaultState = {}) {
     let expandedPaths = _expandNestedPaths(paths);
 
     watchers.map(watcher => {
-      let hasPath = _intersection(expandedPaths, watcher.paths).length > 0;
+      let hasPath = intersect(expandedPaths, watcher.paths).length > 0;
 
       if (hasPath) {
         watcher.callback(getAll(paths));
@@ -69,7 +68,7 @@ function create(defaultState = {}) {
       let removedKeys;
 
       paths = _deepKeys(value, path);
-      removedKeys = _difference(oldKeys, paths);
+      removedKeys = difference(oldKeys, paths);
 
       // If keys were removed in set, we need to notify those watchers
       if (removedKeys.length > 0) {
@@ -89,7 +88,7 @@ function create(defaultState = {}) {
    * @return null
    */
   function setSilent(path, value) {
-    _set(state, path, value);
+    dotProp.set(state, path, value);
   }
 
   /**
