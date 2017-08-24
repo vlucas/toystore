@@ -3,6 +3,9 @@
 Lightweight central store of state with the ability to watch for and react to
 specific property changes
 
+**Think "toy" as in small. Not "toy" as in "not production ready". This thing is
+ready to rock at well under 2KB minified and gzipped.**
+
 ## Installation
 
 ```

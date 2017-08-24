@@ -44,314 +44,121 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return result;
     };
   }, {}], 2: [function (require, module, exports) {
-    'use strict';
-
-    var isObj = require('is-obj');
-
-    function getPathSegments(path) {
-      var pathArr = path.split('.');
-      var parts = [];
-
-      for (var i = 0; i < pathArr.length; i++) {
-        var p = pathArr[i];
-
-        while (p[p.length - 1] === '\\' && pathArr[i + 1] !== undefined) {
-          p = p.slice(0, -1) + '.';
-          p += pathArr[++i];
-        }
-
-        parts.push(p);
-      }
-
-      return parts;
-    }
-
-    module.exports = {
-      get: function get(obj, path, value) {
-        if (!isObj(obj) || typeof path !== 'string') {
-          return value === undefined ? obj : value;
-        }
-
-        var pathArr = getPathSegments(path);
-
-        for (var i = 0; i < pathArr.length; i++) {
-          if (!Object.prototype.propertyIsEnumerable.call(obj, pathArr[i])) {
-            return value;
-          }
-
-          obj = obj[pathArr[i]];
-
-          if (obj === undefined || obj === null) {
-            // `obj` is either `undefined` or `null` so we want to stop the loop, and
-            // if this is not the last bit of the path, and
-            // if it did't return `undefined`
-            // it would return `null` if `obj` is `null`
-            // but we want `get({foo: null}, 'foo.bar')` to equal `undefined`, or the supplied value, not `null`
-            if (i !== pathArr.length - 1) {
-              return value;
-            }
-
-            break;
-          }
-        }
-
-        return obj;
-      },
-      set: function set(obj, path, value) {
-        if (!isObj(obj) || typeof path !== 'string') {
-          return obj;
-        }
-
-        var root = obj;
-        var pathArr = getPathSegments(path);
-
-        for (var i = 0; i < pathArr.length; i++) {
-          var p = pathArr[i];
-
-          if (!isObj(obj[p])) {
-            obj[p] = {};
-          }
-
-          if (i === pathArr.length - 1) {
-            obj[p] = value;
-          }
-
-          obj = obj[p];
-        }
-
-        return root;
-      },
-      delete: function _delete(obj, path) {
-        if (!isObj(obj) || typeof path !== 'string') {
-          return;
-        }
-
-        var pathArr = getPathSegments(path);
-
-        for (var i = 0; i < pathArr.length; i++) {
-          var p = pathArr[i];
-
-          if (i === pathArr.length - 1) {
-            delete obj[p];
-            return;
-          }
-
-          obj = obj[p];
-
-          if (!isObj(obj)) {
-            return;
-          }
-        }
-      },
-      has: function has(obj, path) {
-        if (!isObj(obj) || typeof path !== 'string') {
-          return false;
-        }
-
-        var pathArr = getPathSegments(path);
-
-        for (var i = 0; i < pathArr.length; i++) {
-          if (isObj(obj)) {
-            if (!(pathArr[i] in obj)) {
-              return false;
-            }
-
-            obj = obj[pathArr[i]];
-          } else {
-            return false;
-          }
-        }
-
-        return true;
-      }
-    };
-  }, { "is-obj": 4 }], 3: [function (require, module, exports) {
     module.exports = intersect;
 
-    function many(sets) {
-      var o = {};
-      var l = sets.length - 1;
-      var first = sets[0];
-      var last = sets[l];
+    /*
+      intersect([1, 2, 5, 6], [2, 3, 5, 6]); // [2, 5, 6]
+    */
 
-      for (var i in first) {
-        o[first[i]] = 0;
-      }for (var i = 1; i <= l; i++) {
-        var row = sets[i];
-        for (var j in row) {
-          var key = row[j];
-          if (o[key] === i - 1) o[key] = i;
+    function intersect(arr1, arr2) {
+      var result = [];
+      var len = arr1.length;
+      for (var i = 0; i < len; i++) {
+        var elem = arr1[i];
+        if (arr2.indexOf(elem) > -1) {
+          result.push(elem);
         }
-      }
-
-      var a = [];
-      for (var i in last) {
-        var key = last[i];
-        if (o[key] === l) a.push(key);
-      }
-
-      return a;
-    }
-
-    function intersect(a, b) {
-      if (!b) return many(a);
-
-      var res = [];
-      for (var i = 0; i < a.length; i++) {
-        if (indexOf(b, a[i]) > -1) res.push(a[i]);
-      }
-      return res;
-    }
-
-    intersect.big = function (a, b) {
-      if (!b) return many(a);
-
-      var ret = [];
-      var temp = {};
-
-      for (var i = 0; i < b.length; i++) {
-        temp[b[i]] = true;
-      }
-      for (var i = 0; i < a.length; i++) {
-        if (temp[a[i]]) ret.push(a[i]);
-      }
-
-      return ret;
-    };
-
-    function indexOf(arr, el) {
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i] === el) return i;
-      }
-      return -1;
-    }
-  }, {}], 4: [function (require, module, exports) {
-    'use strict';
-
-    module.exports = function (x) {
-      var type = typeof x === "undefined" ? "undefined" : _typeof(x);
-      return x !== null && (type === 'object' || type === 'function');
-    };
-  }, {}], 5: [function (require, module, exports) {
-    /**
-     * lodash 4.1.3 (Custom Build) <https://lodash.com/>
-     * Build: `lodash modularize exports="npm" -o ./`
-     * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-     * Released under MIT license <https://lodash.com/license>
-     * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-     * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-     */
-
-    /** Used for built-in method references. */
-    var objectProto = Object.prototype;
-
-    /** Used to check objects for own properties. */
-    var hasOwnProperty = objectProto.hasOwnProperty;
-
-    /**
-     * Assigns `value` to `key` of `object` if the existing value is not equivalent
-     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
-     * for equality comparisons.
-     *
-     * @private
-     * @param {Object} object The object to modify.
-     * @param {string} key The key of the property to assign.
-     * @param {*} value The value to assign.
-     */
-    function assignValue(object, key, value) {
-      var objValue = object[key];
-      if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) || value === undefined && !(key in object)) {
-        object[key] = value;
-      }
-    }
-
-    /**
-     * This base implementation of `_.zipObject` which assigns values using `assignFunc`.
-     *
-     * @private
-     * @param {Array} props The property identifiers.
-     * @param {Array} values The property values.
-     * @param {Function} assignFunc The function to assign values.
-     * @returns {Object} Returns the new object.
-     */
-    function baseZipObject(props, values, assignFunc) {
-      var index = -1,
-          length = props.length,
-          valsLength = values.length,
-          result = {};
-
-      while (++index < length) {
-        var value = index < valsLength ? values[index] : undefined;
-        assignFunc(result, props[index], value);
       }
       return result;
     }
+  }, {}], 3: [function (require, module, exports) {
+    module.exports = get;
 
-    /**
-     * This method is like `_.fromPairs` except that it accepts two arrays,
-     * one of property identifiers and one of corresponding values.
-     *
-     * @static
-     * @memberOf _
-     * @since 0.4.0
-     * @category Array
-     * @param {Array} [props=[]] The property identifiers.
-     * @param {Array} [values=[]] The property values.
-     * @returns {Object} Returns the new object.
-     * @example
-     *
-     * _.zipObject(['a', 'b'], [1, 2]);
-     * // => { 'a': 1, 'b': 2 }
-     */
-    function zipObject(props, values) {
-      return baseZipObject(props || [], values || [], assignValue);
+    /*
+      var obj = {a: {aa: {aaa: 2}}, b: 4};
+    
+      get(obj, 'a.aa.aaa'); // 2
+      get(obj, ['a', 'aa', 'aaa']); // 2
+    
+      get(obj, 'b.bb.bbb'); // undefined
+      get(obj, ['b', 'bb', 'bbb']); // undefined
+    
+      get(obj.a, 'aa.aaa'); // 2
+      get(obj.a, ['aa', 'aaa']); // 2
+    
+      get(obj.b, 'bb.bbb'); // undefined
+      get(obj.b, ['bb', 'bbb']); // undefined
+    */
+
+    function get(obj, props) {
+      if (typeof props == 'string') {
+        props = props.split('.');
+      }
+      var prop;
+      while (prop = props.shift()) {
+        obj = obj[prop];
+        if (!obj) {
+          return obj;
+        }
+      }
+      return obj;
     }
+  }, {}], 4: [function (require, module, exports) {
+    module.exports = set;
 
-    /**
-     * Performs a
-     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
-     * comparison between two values to determine if they are equivalent.
-     *
-     * @static
-     * @memberOf _
-     * @since 4.0.0
-     * @category Lang
-     * @param {*} value The value to compare.
-     * @param {*} other The other value to compare.
-     * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-     * @example
-     *
-     * var object = { 'user': 'fred' };
-     * var other = { 'user': 'fred' };
-     *
-     * _.eq(object, object);
-     * // => true
-     *
-     * _.eq(object, other);
-     * // => false
-     *
-     * _.eq('a', 'a');
-     * // => true
-     *
-     * _.eq('a', Object('a'));
-     * // => false
-     *
-     * _.eq(NaN, NaN);
-     * // => true
-     */
-    function eq(value, other) {
-      return value === other || value !== value && other !== other;
+    /*
+      var obj1 = {};
+      set(obj1, 'a.aa.aaa', 4}); // true
+      obj1; // {a: {aa: {aaa: 4}}}
+    
+      var obj2 = {};
+      set(obj2, [a, aa, aaa], 4}); // true
+      obj2; // {a: {aa: {aaa: 4}}}
+    
+      var obj3 = {a: {aa: {aaa: 2}}};
+      set(obj3, 'a.aa.aaa', 3); // true
+      obj3; // {a: {aa: {aaa: 3}}}
+    
+      var obj4 = {a: {aa: {aaa: 2}}};
+      set(obj4, 'a.aa', {bbb: 7}); // true
+      obj4; // {a: {aa: {bbb: 7}}}
+    */
+
+    function set(obj, props, value) {
+      if (typeof props == 'string') {
+        props = props.split('.');
+      }
+      var lastProp = props.pop();
+      if (!lastProp) {
+        return false;
+      }
+      var thisProp;
+      while (thisProp = props.shift()) {
+        if (!obj[thisProp]) {
+          obj[thisProp] = {};
+        }
+        obj = obj[thisProp];
+      }
+      obj[lastProp] = value;
+      return true;
     }
-
-    module.exports = zipObject;
-  }, {}], 6: [function (require, module, exports) {
+  }, {}], 5: [function (require, module, exports) {
     'use strict';
 
-    var dotProp = require('dot-prop');
+    var _get = require('just-safe-get');
+    var _set = require('just-safe-set');
     var difference = require('difference');
-    var intersect = require('intersect');
-    var zipObject = require('lodash.zipobject');
+    var intersect = require('just-intersect');
 
+    /**
+     * Create object with provided arrays of keys and values
+     *
+     * @param {String[]} keys
+     * @param {Array} values
+     */
+    function zipObject(keys, values) {
+      return keys.reduce(function (object, currentValue, currentIndex) {
+        object[currentValue] = values[currentIndex];
+
+        return object;
+      }, {});
+    }
+
+    /**
+     * Create and return a new store instance
+     *
+     * @param {Object} Initial store state
+     */
     function create() {
       var defaultState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -365,13 +172,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
        * @return value
        */
       function get(path) {
-        return dotProp.get(state, path);
+        return _get(state, path);
       }
 
       /**
        * Get multiple path values from store
        *
-       * @param {Array} paths
+       * @param {String[]} paths
        * @return {Object} key/value pair of path => value
        */
       function getAll(paths) {
@@ -387,7 +194,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       /**
        * Notify/update watcher functions for given paths
        *
-       * @param {Array} paths
+       * @param {String[]} paths
        */
       function notifyWatchersOnPaths(paths) {
         var expandedPaths = _expandNestedPaths(paths);
@@ -437,7 +244,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
        * @return null
        */
       function setSilent(path, value) {
-        dotProp.set(state, path, value);
+        _set(state, path, value);
       }
 
       /**
@@ -468,7 +275,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       /**
        * Watch for changes on a given key, and execute the provided callback when there are changes
        *
-       * @param {Array|String} String path or array of paths to watch
+       * @param {String[]|String} String path or array of paths to watch
        * @param {Function} callback to execute when there are changes
        */
       function watch(paths, callback) {
@@ -570,4 +377,4 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     module.exports = {
       create: create
     };
-  }, { "difference": 1, "dot-prop": 2, "intersect": 3, "lodash.zipobject": 5 }] }, {}, [6]);
+  }, { "difference": 1, "just-intersect": 2, "just-safe-get": 3, "just-safe-set": 4 }] }, {}, [5]);

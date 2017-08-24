@@ -1,10 +1,30 @@
 'use strict';
 
-const dotProp = require('dot-prop');
+const _get = require('just-safe-get');
+const _set = require('just-safe-set');
 const difference = require('difference');
-const intersect = require('intersect');
-const zipObject = require('lodash.zipobject');
+const intersect = require('just-intersect');
 
+/**
+ * Create object with provided arrays of keys and values
+ *
+ * @param {String[]} keys
+ * @param {Array} values
+ */
+function zipObject(keys, values) {
+  return keys.reduce(function(object, currentValue, currentIndex) {
+    object[currentValue] = values[currentIndex];
+
+    return object;
+  }, {});
+}
+
+
+/**
+ * Create and return a new store instance
+ *
+ * @param {Object} Initial store state
+ */
 function create(defaultState = {}) {
   let state = defaultState;
   let watchers = [];
@@ -16,13 +36,13 @@ function create(defaultState = {}) {
    * @return value
    */
   function get(path) {
-    return dotProp.get(state, path);
+    return _get(state, path);
   }
 
   /**
    * Get multiple path values from store
    *
-   * @param {Array} paths
+   * @param {String[]} paths
    * @return {Object} key/value pair of path => value
    */
   function getAll(paths) {
@@ -38,7 +58,7 @@ function create(defaultState = {}) {
   /**
    * Notify/update watcher functions for given paths
    *
-   * @param {Array} paths
+   * @param {String[]} paths
    */
   function notifyWatchersOnPaths(paths) {
     let expandedPaths = _expandNestedPaths(paths);
@@ -88,7 +108,7 @@ function create(defaultState = {}) {
    * @return null
    */
   function setSilent(path, value) {
-    dotProp.set(state, path, value);
+    _set(state, path, value);
   }
 
   /**
@@ -117,7 +137,7 @@ function create(defaultState = {}) {
   /**
    * Watch for changes on a given key, and execute the provided callback when there are changes
    *
-   * @param {Array|String} String path or array of paths to watch
+   * @param {String[]|String} String path or array of paths to watch
    * @param {Function} callback to execute when there are changes
    */
   function watch(paths, callback) {
