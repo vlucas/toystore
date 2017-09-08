@@ -33,9 +33,26 @@ function create(defaultState = {}) {
    * Get a store value by path/key
    *
    * @param {String} path
+   * @throws Error when specified store key is not found
    * @return value
    */
   function get(path) {
+    let value = _get(state, path);
+
+    if (value === undefined) {
+      throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
+    }
+
+    return value;
+  }
+
+  /**
+   * Get a store value by path/key
+   *
+   * @param {String} path
+   * @return value
+   */
+  function getSilent(path) {
     return _get(state, path);
   }
 
@@ -67,7 +84,12 @@ function create(defaultState = {}) {
       let hasPath = intersect(expandedPaths, watcher.paths).length > 0;
 
       if (hasPath) {
-        watcher.callback(getAll(paths));
+        let watchedKeyValues = {};
+        try {
+          watchedKeyValues = getAll(paths);
+        } catch (e) { }
+
+        watcher.callback(watchedKeyValues);
       }
     });
   }
@@ -84,15 +106,21 @@ function create(defaultState = {}) {
 
     // Get all paths to notify for updates if given an object
     if (_isObject(value) === true) {
-      let oldKeys = _deepKeys(get(path), path);
-      let removedKeys;
+      let existingValue = getSilent(path);
 
-      paths = _deepKeys(value, path);
-      removedKeys = difference(oldKeys, paths);
+      // If previous value was also an object, we need to see which keys have
+      // changed to notify watchers on those keys
+      if (_isObject(existingValue)) {
+        let oldKeys = _deepKeys(existingValue, path);
+        let removedKeys;
 
-      // If keys were removed in set, we need to notify those watchers
-      if (removedKeys.length > 0) {
-        paths = paths.concat(removedKeys);
+        paths = _deepKeys(value, path);
+        removedKeys = difference(oldKeys, paths);
+
+        // If keys were removed in set, we need to notify those watchers
+        if (removedKeys.length > 0) {
+          paths = paths.concat(removedKeys);
+        }
       }
     }
 
@@ -220,7 +248,7 @@ function _deepKeys(obj, prefix = null) {
   return Object.keys(obj).reduce(function(acc, key){
     var value = obj[key];
 
-    if (typeof value === 'object') {
+    if (_isObject(value)) {
       acc.push.apply(acc, _deepKeys(value, prefix ? prefix + '.' + key : key));
     } else {
       acc.push(prefix ? prefix + '.' + key : key);

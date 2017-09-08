@@ -7,6 +7,7 @@ let storeDefaults = {
   books: [],
   foo: 'bar',
   nullValue: null,
+  themeSettings: null,
   user: {
     email: 'user@example.com',
     id: 1,
@@ -101,6 +102,25 @@ describe('store', () => {
       let expected = books;
 
       expect(actual[0]).toEqual(expected[0]);
+    });
+
+    it('should be able to set complex object', () => {
+      let themeSettings = {
+        "currentSettings": {
+          "type": "Buffer",
+            "data": [
+              123,
+              125
+            ]
+        }
+      };
+
+      store.set('themeSettings', themeSettings);
+
+      let actual = store.get('themeSettings');
+      let expected = themeSettings;
+
+      expect(actual).toBe(expected);
     });
   });
 
