@@ -8,7 +8,8 @@ let storeDefaults = {
   user: {
     email: 'user@example.com',
     id: 1,
-  }
+  },
+  nullValue: null
 };
 
 describe('store', () => {
@@ -27,6 +28,13 @@ describe('store', () => {
     it('should get the desired value for a nested key', () => {
       let actual = store.get('user.id');
       let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should be able to get null value', () => {
+      let actual = store.get('nullValue');
+      let expected = null;
 
       expect(actual).toBe(expected);
     });
@@ -65,6 +73,15 @@ describe('store', () => {
 
       let actual = store.get('user.id');
       let expected = 2;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should be able to set null value', () => {
+      store.set('nullValue', null);
+
+      let actual = store.get('nullValue');
+      let expected = null;
 
       expect(actual).toBe(expected);
     });
