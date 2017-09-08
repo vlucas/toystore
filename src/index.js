@@ -83,7 +83,7 @@ function create(defaultState = {}) {
     let paths = _pathsArray(path);
 
     // Get all paths to notify for updates if given an object
-    if (typeof value === 'object' && value) {
+    if (_isObject(value) === true) {
       let oldKeys = _deepKeys(get(path), path);
       let removedKeys;
 
@@ -228,6 +228,13 @@ function _deepKeys(obj, prefix = null) {
 
     return acc;
   }, []);
+}
+
+/**
+ * Ensure value is not an object
+ */
+function _isObject(testVar) {
+  return testVar instanceof Object && !Array.isArray(testVar) && testVar !== null;
 }
 
 module.exports = {

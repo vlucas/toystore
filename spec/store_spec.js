@@ -4,12 +4,13 @@ const toystore = require('../src/index');
 
 let store;
 let storeDefaults = {
+  books: [],
   foo: 'bar',
+  nullValue: null,
   user: {
     email: 'user@example.com',
     id: 1,
   },
-  nullValue: null
 };
 
 describe('store', () => {
@@ -84,6 +85,22 @@ describe('store', () => {
       let expected = null;
 
       expect(actual).toBe(expected);
+    });
+
+    it('should be able to set array value', () => {
+      let books = [
+        { title: 'One Book' },
+        { title: 'Two Book' },
+        { title: 'Red Book' },
+        { title: 'Blue Book' },
+      ];
+
+      store.set('books', books);
+
+      let actual = store.get('books');
+      let expected = books;
+
+      expect(actual[0]).toEqual(expected[0]);
     });
   });
 
