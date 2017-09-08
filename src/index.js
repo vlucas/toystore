@@ -83,7 +83,7 @@ function create(defaultState = {}) {
     let paths = _pathsArray(path);
 
     // Get all paths to notify for updates if given an object
-    if (typeof value === 'object') {
+    if (typeof value === 'object' && value) {
       let oldKeys = _deepKeys(get(path), path);
       let removedKeys;
 
