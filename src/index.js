@@ -179,7 +179,7 @@ function create(defaultState = {}) {
    * @return null
    */
   function reset(newState) {
-    state = newState || defaultState;
+    state = JSON.parse(JSON.stringify(newState || defaultState));
 
     notifyAllWatchers();
   }
