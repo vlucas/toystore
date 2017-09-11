@@ -26,7 +26,7 @@ function zipObject(keys, values) {
  * @param {Object} Initial store state
  */
 function create(defaultState = {}) {
-  let state = defaultState;
+  let state = JSON.parse(JSON.stringify(defaultState)); // Deep clone the default state
   let watchers = [];
 
   /**
@@ -47,16 +47,6 @@ function create(defaultState = {}) {
   }
 
   /**
-   * Get a store value by path/key
-   *
-   * @param {String} path
-   * @return value
-   */
-  function getSilent(path) {
-    return _get(state, path);
-  }
-
-  /**
    * Get multiple path values from store
    *
    * @param {String[]} paths
@@ -70,6 +60,16 @@ function create(defaultState = {}) {
     let values = paths.map(get);
 
     return zipObject(paths, values);
+  }
+
+  /**
+   * Get a store value by path/key
+   *
+   * @param {String} path
+   * @return value
+   */
+  function getSilent(path) {
+    return _get(state, path);
   }
 
   /**
@@ -165,7 +165,7 @@ function create(defaultState = {}) {
    * @return null
    */
   function reset(newState) {
-    state = newState;
+    state = newState || defaultState;
   }
 
   /**

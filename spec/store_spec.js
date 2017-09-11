@@ -66,6 +66,28 @@ describe('store', () => {
     });
   });
 
+  describe('reset', () => {
+    it('should reset store to initial value with no arguments', () => {
+      store.set('foo', 'baz');
+      store.reset();
+
+      let actual = store.get('foo');
+      let expected = 'bar';
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should reset store to provided value when given', () => {
+      store.set('foo', 'baz');
+      store.reset({ foo: 'qux' });
+
+      let actual = store.get('foo');
+      let expected = 'qux';
+
+      expect(actual).toBe(expected);
+    });
+  });
+
   describe('set', () => {
     it('should set the desired value at the top level', () => {
       store.set('foo', 'baz');
