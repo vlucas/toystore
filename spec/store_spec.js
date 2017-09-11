@@ -40,6 +40,12 @@ describe('store', () => {
 
       expect(actual).toBe(expected);
     });
+
+    it('should throw exception for key that is not known', () => {
+      expect(() => {
+        let actual = store.get('keyNotSet');
+      }).toThrow(new Error('[toystore] Requested store key "keyNotSet" was not found in store.'));
+    });
   });
 
   describe('getAll', () => {
@@ -83,6 +89,15 @@ describe('store', () => {
       store.set('nullValue', null);
 
       let actual = store.get('nullValue');
+      let expected = null;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should not unset key when set is called with undefined (should set it to null instead)', () => {
+      store.set('foo', undefined);
+
+      let actual = store.get('foo');
       let expected = null;
 
       expect(actual).toBe(expected);
@@ -246,55 +261,81 @@ describe('store', () => {
 
       expect(actual).toBe(expected);
     });
-  });
 
-  it('should trigger an update when root key is changed with a watched nested key', () => {
-    let actual = 0;
+    it('should trigger an update when root key is changed with a watched nested key', () => {
+      let actual = 0;
 
-    store.watch('user.id', () => ++actual);
-    store.set('user', {
-      email: 'bar@baz.com',
-      id: 2,
+      store.watch('user.id', () => ++actual);
+      store.set('user', {
+        email: 'bar@baz.com',
+        id: 2,
+      });
+
+      let expected = 1;
+
+      expect(actual).toBe(expected);
     });
 
-    let expected = 1;
+    it('should trigger an update when root key is removed with a watched nested key', () => {
+      let actual = 0;
 
-    expect(actual).toBe(expected);
-  });
+      store.watch('user.id', () => ++actual);
+      store.set('user', {
+        email: 'bar@baz.com'
+        // id is omitted!
+      });
 
-  it('should trigger an update when root key is removed with a watched nested key', () => {
-    let actual = 0;
+      let expected = 1;
 
-    store.watch('user.id', () => ++actual);
-    store.set('user', {
-      email: 'bar@baz.com'
-      // id is omitted!
+      expect(actual).toBe(expected);
     });
 
-    let expected = 1;
+    it('should trigger an update when nested key is changed with a watched root key', () => {
+      let actual = 0;
 
-    expect(actual).toBe(expected);
+      store.watch('user', () => ++actual);
+      store.set('user.email', 'bar@baz.com');
+
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should not trigger an update when updating a sibling nested key', () => {
+      let actual = 0;
+
+      store.watch(['user.email'], () => ++actual);
+      store.set('user.id', 2);
+
+      let expected = 0;
+
+      expect(actual).toBe(expected);
+    });
   });
 
-  it('should trigger an update when nested key is changed with a watched root key', () => {
-    let actual = 0;
+  describe('unset', () => {
+    it('should unset key at path', () => {
+      store.unset('foo');
 
-    store.watch('user', () => ++actual);
-    store.set('user.email', 'bar@baz.com');
-
-    let expected = 1;
-
-    expect(actual).toBe(expected);
+      expect(() => {
+        let actual = store.get('foo');
+      }).toThrow(new Error('[toystore] Requested store key "foo" was not found in store.'));
+    });
   });
 
-  it('should not trigger an update when updating a sibling nested key', () => {
-    let actual = 0;
+  describe('unwatch', () => {
+    it('should not error when there are no watchers', () => {
+      let actual = 0;
+      let callback = () => ++actual;
 
-    store.watch(['user.email'], () => ++actual);
-    store.set('user.id', 2);
+      store.watch('foo', callback);
 
-    let expected = 0;
+      store.unwatch('foo', callback);
+      store.unwatch('foo', callback);
 
-    expect(actual).toBe(expected);
+      let expected = 0;
+
+      expect(actual).toBe(expected);
+    });
   });
 });

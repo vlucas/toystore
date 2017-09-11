@@ -124,6 +124,12 @@ function create(defaultState = {}) {
       }
     }
 
+    // Setting 'undefined' on an object key here will remove it from the store,
+    // so we switch it to null. Removing keys should only be done with 'unset'.
+    if (value === undefined) {
+      value = null;
+    }
+
     setSilent(path, value);
     notifyWatchersOnPaths(paths);
   }
@@ -178,13 +184,27 @@ function create(defaultState = {}) {
   }
 
   /**
+   * Remove key
+   */
+  function unset(path) {
+    _set(state, path, undefined);
+  }
+
+  /**
    * Clear/remove specific watcher by callback function
    */
   function unwatch(callback) {
-    let index = watchers.findIndex(w => w.callback === callback);
+    let index = watchers.findIndex(function _matchWatcher(watcher) {
+      return watcher && watcher.callback === callback;
+    });
 
     if (index) {
-      delete watchers[index];
+      // We can't delete the last watcher...
+      if (watchers.length === 1) {
+        unwatchAll();
+      } else {
+        delete watchers[index];
+      }
     }
   }
 
@@ -204,6 +224,7 @@ function create(defaultState = {}) {
     setAll,
     setSilent,
     watch,
+    unset,
     unwatch,
     unwatchAll,
   }
