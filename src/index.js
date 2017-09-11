@@ -73,6 +73,20 @@ function create(defaultState = {}) {
   }
 
   /**
+   * Run all watchers with new/current values
+   */
+  function notifyAllWatchers() {
+    watchers.map(function _notifyWatcher(watcher) {
+      let watchedKeyValues = {};
+      try {
+        watchedKeyValues = getAll(watcher.paths);
+      } catch (e) { }
+
+      watcher.callback(watchedKeyValues);
+    });
+  }
+
+  /**
    * Notify/update watcher functions for given paths
    *
    * @param {String[]} paths
@@ -80,7 +94,7 @@ function create(defaultState = {}) {
   function notifyWatchersOnPaths(paths) {
     let expandedPaths = _expandNestedPaths(paths);
 
-    watchers.map(watcher => {
+    watchers.map(function _notifyWatcher(watcher) {
       let hasPath = intersect(expandedPaths, watcher.paths).length > 0;
 
       if (hasPath) {
@@ -161,11 +175,13 @@ function create(defaultState = {}) {
   /**
    * Reset the whole state object to provided one
    *
-   * @param {Object} newState
+   * @param {Object} newState (optional) - Will reset to first provided state if none provided
    * @return null
    */
   function reset(newState) {
     state = newState || defaultState;
+
+    notifyAllWatchers();
   }
 
   /**

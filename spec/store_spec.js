@@ -77,6 +77,16 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
 
+    it('should reset store to initial value with no arguments and nested key', () => {
+      store.set('user.id', 42);
+      store.reset();
+
+      let actual = store.get('user.id');
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+
     it('should reset store to provided value when given', () => {
       store.set('foo', 'baz');
       store.reset({ foo: 'qux' });
@@ -85,6 +95,29 @@ describe('store', () => {
       let expected = 'qux';
 
       expect(actual).toBe(expected);
+    });
+
+    it('should reset store to provided value when given', () => {
+      let renderCount = 0;
+
+      // Setup watcher
+      store.watch(['foo'], (newValue) => {
+
+        if (renderCount === 0) {
+          expect(newValue['foo']).toEqual('qux');
+        } else {
+          expect(newValue['foo']).toEqual('bar');
+        }
+
+        renderCount++;
+      });
+      store.set('foo', 'qux');
+
+      store.reset(); // will trigger watchers
+
+      let expected = 2;
+
+      expect(renderCount).toBe(expected);
     });
   });
 
