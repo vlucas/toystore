@@ -3,8 +3,14 @@
 Lightweight central store of state with the ability to watch for and react to
 specific property changes
 
-**Think "toy" as in small. Not "toy" as in "not production ready". This thing is
-ready to rock at well under 2KB minified and gzipped.**
+**Think "toy" as in small. Not "toy" as in "not production ready".**
+
+| File                            | Size    |
+|---------------------------------|---------|
+| dist/toystore.js                | 12.0 kb |
+| dist/toystore.min.js            | 5.0 kb  |
+| **dist/toystore.min.js + gzipping** | **1.79 kb** |
+
 
 ## Installation
 
@@ -122,6 +128,10 @@ store.setAll({ is_cool: true, is_quality: true });
 
 Reset the whole store to the provided object. Commonly used for testing and/or
 resetting the store to the default state.
+
+NOTE: This will trigger all watchers because all keys will change, so if you
+also want to remove all the watchers before using reset(), call
+**unwatchAll()**.
 
 ```javascript
 store.reset({ is_cool: true, is_quality: true, user: false });

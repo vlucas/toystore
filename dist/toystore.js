@@ -1,7 +1,5 @@
 "use strict";
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 (function e(t, n, r) {
   function s(o, u) {
     if (!n[o]) {
@@ -162,17 +160,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     function create() {
       var defaultState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      var state = defaultState;
+      var state = clone(defaultState);
       var watchers = [];
 
       /**
        * Get a store value by path/key
        *
        * @param {String} path
+       * @throws Error when specified store key is not found
        * @return value
        */
       function get(path) {
-        return _get(state, path);
+        var value = _get(state, path);
+
+        if (value === undefined) {
+          throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
+        }
+
+        return value;
       }
 
       /**
@@ -192,6 +197,30 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       /**
+       * Get a store value by path/key
+       *
+       * @param {String} path
+       * @return value
+       */
+      function getSilent(path) {
+        return _get(state, path);
+      }
+
+      /**
+       * Run all watchers with new/current values
+       */
+      function notifyAllWatchers() {
+        watchers.map(function _notifyWatcher(watcher) {
+          var watchedKeyValues = {};
+          try {
+            watchedKeyValues = getAll(watcher.paths);
+          } catch (e) {}
+
+          watcher.callback(watchedKeyValues);
+        });
+      }
+
+      /**
        * Notify/update watcher functions for given paths
        *
        * @param {String[]} paths
@@ -199,11 +228,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       function notifyWatchersOnPaths(paths) {
         var expandedPaths = _expandNestedPaths(paths);
 
-        watchers.map(function (watcher) {
+        watchers.map(function _notifyWatcher(watcher) {
           var hasPath = intersect(expandedPaths, watcher.paths).length > 0;
 
           if (hasPath) {
-            watcher.callback(getAll(paths));
+            var watchedKeyValues = {};
+            try {
+              watchedKeyValues = getAll(paths);
+            } catch (e) {}
+
+            watcher.callback(watchedKeyValues);
           }
         });
       }
@@ -219,17 +253,29 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         var paths = _pathsArray(path);
 
         // Get all paths to notify for updates if given an object
-        if ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object') {
-          var oldKeys = _deepKeys(get(path), path);
-          var removedKeys = void 0;
+        if (_isObject(value) === true) {
+          var existingValue = getSilent(path);
 
-          paths = _deepKeys(value, path);
-          removedKeys = difference(oldKeys, paths);
+          // If previous value was also an object, we need to see which keys have
+          // changed to notify watchers on those keys
+          if (_isObject(existingValue)) {
+            var oldKeys = _deepKeys(existingValue, path);
+            var removedKeys = void 0;
 
-          // If keys were removed in set, we need to notify those watchers
-          if (removedKeys.length > 0) {
-            paths = paths.concat(removedKeys);
+            paths = _deepKeys(value, path);
+            removedKeys = difference(oldKeys, paths);
+
+            // If keys were removed in set, we need to notify those watchers
+            if (removedKeys.length > 0) {
+              paths = paths.concat(removedKeys);
+            }
           }
+        }
+
+        // Setting 'undefined' on an object key here will remove it from the store,
+        // so we switch it to null. Removing keys should only be done with 'unset'.
+        if (value === undefined) {
+          value = null;
         }
 
         setSilent(path, value);
@@ -265,11 +311,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       /**
        * Reset the whole state object to provided one
        *
-       * @param {Object} newState
+       * @param {Object} newState (optional) - Will reset to first provided state if none provided
        * @return null
        */
       function reset(newState) {
-        state = newState;
+        state = clone(newState || defaultState);
+
+        notifyAllWatchers();
       }
 
       /**
@@ -288,15 +336,27 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       /**
+       * Remove key
+       */
+      function unset(path) {
+        _set(state, path, undefined);
+      }
+
+      /**
        * Clear/remove specific watcher by callback function
        */
       function unwatch(callback) {
-        var index = watchers.findIndex(function (w) {
-          return w.callback === callback;
+        var index = watchers.findIndex(function _matchWatcher(watcher) {
+          return watcher && watcher.callback === callback;
         });
 
         if (index) {
-          delete watchers[index];
+          // We can't delete the last watcher...
+          if (watchers.length === 1) {
+            unwatchAll();
+          } else {
+            delete watchers[index];
+          }
         }
       }
 
@@ -316,6 +376,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         setAll: setAll,
         setSilent: setSilent,
         watch: watch,
+        unset: unset,
         unwatch: unwatch,
         unwatchAll: unwatchAll
       };
@@ -364,7 +425,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return Object.keys(obj).reduce(function (acc, key) {
         var value = obj[key];
 
-        if ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object') {
+        if (_isObject(value)) {
           acc.push.apply(acc, _deepKeys(value, prefix ? prefix + '.' + key : key));
         } else {
           acc.push(prefix ? prefix + '.' + key : key);
@@ -372,6 +433,20 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         return acc;
       }, []);
+    }
+
+    /**
+     * Ensure value is not an object
+     */
+    function _isObject(testVar) {
+      return testVar instanceof Object && !Array.isArray(testVar) && testVar !== null;
+    }
+
+    /**
+     * Deep clone object to break references
+     */
+    function clone(obj) {
+      return JSON.parse(JSON.stringify(obj));
     }
 
     module.exports = {
