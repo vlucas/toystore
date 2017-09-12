@@ -26,7 +26,7 @@ function zipObject(keys, values) {
  * @param {Object} Initial store state
  */
 function create(defaultState = {}) {
-  let state = JSON.parse(JSON.stringify(defaultState)); // Deep clone the default state
+  let state = clone(defaultState);
   let watchers = [];
 
   /**
@@ -179,7 +179,7 @@ function create(defaultState = {}) {
    * @return null
    */
   function reset(newState) {
-    state = JSON.parse(JSON.stringify(newState || defaultState));
+    state = clone(newState || defaultState);
 
     notifyAllWatchers();
   }
@@ -300,6 +300,13 @@ function _deepKeys(obj, prefix = null) {
  */
 function _isObject(testVar) {
   return testVar instanceof Object && !Array.isArray(testVar) && testVar !== null;
+}
+
+/**
+ * Deep clone object to break references
+ */
+function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 module.exports = {
