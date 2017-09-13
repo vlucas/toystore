@@ -240,6 +240,17 @@
             watcher.callback(watchedKeyValues);
           }
         });
+
+        if (paths !== '*') {
+          notifyGlobalWatchers();
+        }
+      }
+
+      /**
+       * Notify/update global watchers
+       */
+      function notifyGlobalWatchers() {
+        notifyWatchersOnPaths('*');
       }
 
       /**
@@ -336,6 +347,16 @@
       }
 
       /**
+       * Watch ALL keys, and execute the provided callback on any and every key change
+       */
+      function watchAll(callback) {
+        watchers.push({
+          callback: callback,
+          paths: '*'
+        });
+      }
+
+      /**
        * Remove key
        */
       function unset(path) {
@@ -376,6 +397,7 @@
         setAll: setAll,
         setSilent: setSilent,
         watch: watch,
+        watchAll: watchAll,
         unset: unset,
         unwatch: unwatch,
         unwatchAll: unwatchAll

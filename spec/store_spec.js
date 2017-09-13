@@ -368,6 +368,37 @@ describe('store', () => {
     });
   });
 
+  describe('watchAll', () => {
+    it('should watch for any and all changes on any key', () => {
+      let actual = 0;
+
+      store.watchAll(() => ++actual);
+      store.set('foo', 'baz');
+      store.set('foo', 'bax');
+
+      let expected = 2;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should only fire once with a setAll()', () => {
+      let actual = 0;
+
+      store.watchAll(() => ++actual);
+      store.setAll({
+        'foo': 'baz',
+        'user': {
+          'email': 'foo@bar.com',
+          'id': 2,
+        },
+      });
+
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+  });
+
   describe('unset', () => {
     it('should unset key at path', () => {
       store.unset('foo');

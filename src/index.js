@@ -106,6 +106,17 @@ function create(defaultState = {}) {
         watcher.callback(watchedKeyValues);
       }
     });
+
+    if (paths !== '*') {
+      notifyGlobalWatchers();
+    }
+  }
+
+  /**
+   * Notify/update global watchers
+   */
+  function notifyGlobalWatchers() {
+    notifyWatchersOnPaths('*');
   }
 
   /**
@@ -200,6 +211,16 @@ function create(defaultState = {}) {
   }
 
   /**
+   * Watch ALL keys, and execute the provided callback on any and every key change
+   */
+  function watchAll(callback) {
+    watchers.push({
+      callback,
+      paths: '*',
+    });
+  }
+
+  /**
    * Remove key
    */
   function unset(path) {
@@ -240,6 +261,7 @@ function create(defaultState = {}) {
     setAll,
     setSilent,
     watch,
+    watchAll,
     unset,
     unwatch,
     unwatchAll,

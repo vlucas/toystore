@@ -7,9 +7,9 @@ specific property changes
 
 | File                            | Size    |
 |---------------------------------|---------|
-| dist/toystore.js                | 12.0 kb |
-| dist/toystore.min.js            | 5.0 kb  |
-| **dist/toystore.min.js + gzipping** | **1.79 kb** |
+| dist/toystore.js                | 12.0 K |
+| dist/toystore.min.js            | 5.2 K  |
+| **dist/toystore.min.js + gzipping** | **1.83 K** |
 
 
 ## Installation
@@ -153,6 +153,16 @@ store values after the triggered change.
 store.watch(['user'], updateUserInfo);
 store.watch(['mode'], changeMode);
 store.watch(['router.url'], (newValues) => navigateToPage(newValues.router.url));
+```
+
+### watchAll(callback)
+
+Similar to `watch`, but provided `callback` will execute whenever any key in
+the whole store is changed. Will only be fired once when `setAll` is used with
+multiple keys.
+
+```javascript
+store.watchAll(renderApp); // Will execute when *any* key changes
 ```
 
 ### unwatch(callback)
