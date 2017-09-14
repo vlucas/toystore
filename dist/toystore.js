@@ -1,5 +1,7 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 (function e(t, n, r) {
   function s(o, u) {
     if (!n[o]) {
@@ -177,7 +179,12 @@
           throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
         }
 
-        return value;
+        // Clone objects and arrays to prevent mutation
+        if ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object' && value !== null) {
+          value = clone(value);
+        }
+
+        return clone(value);
       }
 
       /**
@@ -188,7 +195,11 @@
        */
       function getAll(paths) {
         if (paths === undefined) {
-          return state;
+          return clone(state);
+        }
+
+        if (!paths instanceof Array) {
+          throw new Error('[toystore] getAll() argument "paths" must be an array.');
         }
 
         var values = paths.map(get);
@@ -281,6 +292,13 @@
               paths = paths.concat(removedKeys);
             }
           }
+        }
+
+        // Cannot set things that can't be serialized
+        var valueType = typeof value === "undefined" ? "undefined" : _typeof(value);
+
+        if (valueType === 'function') {
+          throw new Error('[toystore] Cannot set "' + path + '" with value type "' + valueType + '". All store values must be serializable.');
         }
 
         // Setting 'undefined' on an object key here will remove it from the store,
