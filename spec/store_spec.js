@@ -46,6 +46,41 @@ describe('store', () => {
         let actual = store.get('keyNotSet');
       }).toThrow(new Error('[toystore] Requested store key "keyNotSet" was not found in store.'));
     });
+
+    it('should return an immutable object reference', () => {
+      let user = store.get('user');
+
+      user.id = 42; // should not change value for next call
+
+      let actual = store.get('user.id');
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should return an immutable array reference', () => {
+      let books = store.get('books');
+
+      // should not change value for next call
+      books.push('Bible');
+
+      let actual = store.get('books');
+      let expected = [];
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return an immutable value reference', () => {
+      let nullValue = store.get('nullValue');
+
+      // should not change value for next call
+      nullValue = false;
+
+      let actual = store.get('nullValue');
+      let expected = null;
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('getAll', () => {
@@ -63,6 +98,28 @@ describe('store', () => {
       let actual = store.getAll();
 
       expect(actual).toEqual(storeDefaults);
+    });
+
+    it('should return an immutable object reference by key', () => {
+      let values = store.getAll(['user']);
+
+      values.user.id = 42; // should not change value for next call
+
+      let actual = store.get('user.id');
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should return an immutable store when given no paths', () => {
+      let values = store.getAll();
+
+      values.user.id = 42; // should not change value for next call
+
+      let actual = store.get('user.id');
+      let expected = 1;
+
+      expect(actual).toBe(expected);
     });
   });
 
@@ -190,7 +247,13 @@ describe('store', () => {
       let actual = store.get('themeSettings');
       let expected = themeSettings;
 
-      expect(actual).toBe(expected);
+      expect(actual).toEqual(expected);
+    });
+
+    it('should throw error when trying to set a function value', () => {
+      expect(() => {
+        store.set('function', function () {});
+      }).toThrow(new Error('[toystore] Cannot set "function" with value type "function". All store values must be serializable.'));
     });
   });
 

@@ -43,7 +43,12 @@ function create(defaultState = {}) {
       throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
     }
 
-    return value;
+    // Clone objects and arrays to prevent mutation
+    if (typeof value === 'object' && value !== null) {
+      value = clone(value);
+    }
+
+    return clone(value);
   }
 
   /**
@@ -54,7 +59,11 @@ function create(defaultState = {}) {
    */
   function getAll(paths) {
     if (paths === undefined) {
-      return state;
+      return clone(state);
+    }
+
+    if (!paths instanceof Array) {
+      throw new Error('[toystore] getAll() argument "paths" must be an array.');
     }
 
     let values = paths.map(get);
@@ -147,6 +156,13 @@ function create(defaultState = {}) {
           paths = paths.concat(removedKeys);
         }
       }
+    }
+
+    // Cannot set things that can't be serialized
+    let valueType = typeof value;
+
+    if (valueType === 'function') {
+      throw new Error('[toystore] Cannot set "' + path + '" with value type "' + valueType + '". All store values must be serializable.');
     }
 
     // Setting 'undefined' on an object key here will remove it from the store,
