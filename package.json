@@ -2,11 +2,11 @@
   "name": "toystore",
   "version": "1.2.2",
   "description": "Lightweight central store of state with the ability to watch for and react to specific property changes",
-  "main": "src/index.js",
+  "main": "es5/index.js",
   "scripts": {
-    "build": "npm run package && npm run babel && npm run minify",
-    "package": "./node_modules/browserify/bin/cmd.js src/index.js -o dist/toystore.js",
-    "babel": "./node_modules/babel-cli/bin/babel.js dist/toystore.js --out-file dist/toystore.js",
+    "build": "npm run babel && npm run package  && npm run minify",
+    "babel": "./node_modules/babel-cli/bin/babel.js src/index.js --out-file es5/index.js",
+    "package": "./node_modules/browserify/bin/cmd.js es5/index.js -o dist/toystore.js",
     "minify": "./node_modules/uglify-js/bin/uglifyjs dist/toystore.js -o dist/toystore.min.js",
     "test": "jasmine"
   },
