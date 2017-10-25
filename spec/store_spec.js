@@ -380,6 +380,28 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
 
+    it('should trigger the higher priority watcher first', () => {
+      let actual = '';
+
+      store.watch(['user.email'], () => {
+        actual += '1';
+      });
+
+      store.watch(['user'], () => {
+        actual += '2';
+      }, { priority: 99999 });
+
+      store.watch(['user'], () => {
+        actual += '3';
+      }, { priority: -1 });
+
+      store.set('user.email', 'user2@example.com');
+
+      let expected = '213';
+
+      expect(actual).toBe(expected);
+    });
+
     it('should trigger an update when root key is changed with a watched nested key', () => {
       let actual = 0;
 
