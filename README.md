@@ -52,6 +52,18 @@ const store = require('./mystore');
 store.watch(['user.email'], updateUserEmail);
 ```
 
+
+Control the order watchers fire using priority weightings. The default priority is 0. Negative numbers can be used to push watchers to the end.
+```javascript
+const store = require('./mystore');
+
+store.watch(['user'], secondTask);
+store.watch(['user'], firstTask, { priority: 10 });
+store.watch(['user'], thirdTask, { priority: -1 });
+
+```
+
+
 Update store values from anywhere in your app:
 ```javascript
 const store = require('./mystore');
