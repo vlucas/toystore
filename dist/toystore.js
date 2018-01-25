@@ -222,24 +222,36 @@ function create() {
    *
    * @param {String[]|String} String path or array of paths to watch
    * @param {Function} callback to execute when there are changes
+   * @param {Object} options Options
+   * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
    */
   function watch(paths, callback) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { priority: 0 };
+
     paths = _pathsArray(paths);
 
     watchers.push({
       callback: callback,
-      paths: paths
+      paths: paths,
+      options: options
     });
+
+    watchers = watchers.sort(_sortByPriority);
   }
 
   /**
    * Watch ALL keys, and execute the provided callback on any and every key change
    */
   function watchAll(callback) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { priority: 0 };
+
     watchers.push({
       callback: callback,
-      paths: '*'
+      paths: '*',
+      options: options
     });
+
+    watchers = watchers.sort(_sortByPriority);
   }
 
   /**
@@ -288,6 +300,10 @@ function create() {
     unwatch: unwatch,
     unwatchAll: unwatchAll
   };
+}
+
+function _sortByPriority(a, b) {
+  return b.options.priority - a.options.priority;
 }
 
 // Ensure paths is always an array
@@ -415,7 +431,7 @@ function intersect(arr1, arr2) {
 module.exports = get;
 
 /*
-  var obj = {a: {aa: {aaa: 2}}, b: 4};
+  const obj = {a: {aa: {aaa: 2}}, b: 4};
 
   get(obj, 'a.aa.aaa'); // 2
   get(obj, ['a', 'aa', 'aaa']); // 2
@@ -428,14 +444,22 @@ module.exports = get;
 
   get(obj.b, 'bb.bbb'); // undefined
   get(obj.b, ['bb', 'bbb']); // undefined
+
+  const obj = {a: {}};
+  const sym = Symbol();
+  obj.a[sym] = 4;
+  get(obj.a, sym); // 4
 */
 
 function get(obj, props) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var prop;
-  while (prop = props.shift()) {
+  while ((prop = props.shift())) {
     obj = obj[prop];
     if (!obj) {
       return obj;
@@ -463,18 +487,26 @@ module.exports = set;
   var obj4 = {a: {aa: {aaa: 2}}};
   set(obj4, 'a.aa', {bbb: 7}); // true
   obj4; // {a: {aa: {bbb: 7}}}
+
+  const obj5 = {a: {}};
+  const sym = Symbol();
+  set(obj5.a, sym, 7); // true
+  obj5; // {a: {Symbol(): 7}}
 */
 
 function set(obj, props, value) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var lastProp = props.pop();
   if (!lastProp) {
     return false;
   }
   var thisProp;
-  while (thisProp = props.shift()) {
+  while ((thisProp = props.shift())) {
     if (!obj[thisProp]) {
       obj[thisProp] = {};
     }

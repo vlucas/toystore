@@ -221,24 +221,36 @@ function create() {
    *
    * @param {String[]|String} String path or array of paths to watch
    * @param {Function} callback to execute when there are changes
+   * @param {Object} options Options
+   * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
    */
   function watch(paths, callback) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { priority: 0 };
+
     paths = _pathsArray(paths);
 
     watchers.push({
       callback: callback,
-      paths: paths
+      paths: paths,
+      options: options
     });
+
+    watchers = watchers.sort(_sortByPriority);
   }
 
   /**
    * Watch ALL keys, and execute the provided callback on any and every key change
    */
   function watchAll(callback) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { priority: 0 };
+
     watchers.push({
       callback: callback,
-      paths: '*'
+      paths: '*',
+      options: options
     });
+
+    watchers = watchers.sort(_sortByPriority);
   }
 
   /**
@@ -287,6 +299,10 @@ function create() {
     unwatch: unwatch,
     unwatchAll: unwatchAll
   };
+}
+
+function _sortByPriority(a, b) {
+  return b.options.priority - a.options.priority;
 }
 
 // Ensure paths is always an array
