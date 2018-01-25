@@ -161,6 +161,18 @@ function create() {
       }
     }
 
+    setSilent(path, value);
+    notifyWatchersOnPaths(paths);
+  }
+
+  /**
+   * Set a store value at path/key to given value WITHOUT notifying watchers
+   *
+   * @param {String} path
+   * @param {mixed} value
+   * @return null
+   */
+  function setSilent(path, value) {
     // Cannot set things that can't be serialized
     var valueType = typeof value === 'undefined' ? 'undefined' : _typeof(value);
 
@@ -174,18 +186,6 @@ function create() {
       value = null;
     }
 
-    setSilent(path, value);
-    notifyWatchersOnPaths(paths);
-  }
-
-  /**
-   * Set a store value at path/key to given value WITHOUT notifying watchers
-   *
-   * @param {String} path
-   * @param {mixed} value
-   * @return null
-   */
-  function setSilent(path, value) {
     _set(state, path, value);
   }
 

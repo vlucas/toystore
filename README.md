@@ -3,14 +3,8 @@
 Lightweight central store of state with the ability to watch for and react to
 specific property changes
 
-**Think "toy" as in small.** This thing is ready to rock at just a hair over 2kb.
-
-| File                            | Size    |
-|---------------------------------|---------|
-| dist/toystore.js                | 13.0 K |
-| dist/toystore.min.js            | 5.9 K  |
-| **dist/toystore.min.js + gzipping** | **2.04 K** |
-
+**Think "toy" as in small.** This thing is ready to rock at just a hair over
+2kb minified and gzipped.
 
 ## Installation
 
