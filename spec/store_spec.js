@@ -291,6 +291,25 @@ describe('store', () => {
       expect(actual2).toBe(expected2);
       expect(count).toBe(1);
     });
+
+    it('should not unset key when set is called with undefined (should set it to null instead)', () => {
+      store.setAll({
+        'foo': undefined
+      });
+
+      let actual = store.get('foo');
+      let expected = null;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should throw error when trying to set a function value', () => {
+      expect(() => {
+        store.setAll({
+          'function': function () {}
+        });
+      }).toThrow(new Error('[toystore] Cannot set "function" with value type "function". All store values must be serializable.'));
+    });
   });
 
   describe('setSilent', () => {

@@ -158,6 +158,18 @@ function create(defaultState = {}) {
       }
     }
 
+    setSilent(path, value);
+    notifyWatchersOnPaths(paths);
+  }
+
+  /**
+   * Set a store value at path/key to given value WITHOUT notifying watchers
+   *
+   * @param {String} path
+   * @param {mixed} value
+   * @return null
+   */
+  function setSilent(path, value) {
     // Cannot set things that can't be serialized
     let valueType = typeof value;
 
@@ -171,18 +183,6 @@ function create(defaultState = {}) {
       value = null;
     }
 
-    setSilent(path, value);
-    notifyWatchersOnPaths(paths);
-  }
-
-  /**
-   * Set a store value at path/key to given value WITHOUT notifying watchers
-   *
-   * @param {String} path
-   * @param {mixed} value
-   * @return null
-   */
-  function setSilent(path, value) {
     _set(state, path, value);
   }
 
