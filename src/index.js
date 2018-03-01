@@ -245,6 +245,25 @@ function create(defaultState = {}) {
   }
 
   /**
+   * Watch for changes on a given key once, and execute the provided callback
+   * when there are changes. Callback removes itself after the first call so
+   * that it is never called again.
+   *
+   * @param {String[]|String} String path or array of paths to watch
+   * @param {Function} callback to execute when there are changes
+   * @param {Object} options Options
+   * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
+   */
+  function watchOnce(paths, callback, options = { priority: 0 }) {
+    let onceCallback = function _watchOnceCallback(...args) {
+      callback(...args);
+      unwatch(onceCallback);
+    };
+
+    return watch(paths, onceCallback, options);
+  }
+
+  /**
    * Remove key
    */
   function unset(path) {
@@ -259,7 +278,7 @@ function create(defaultState = {}) {
       return watcher && watcher.callback === callback;
     });
 
-    if (index) {
+    if (index !== -1) {
       // We can't delete the last watcher...
       if (watchers.length === 1) {
         unwatchAll();
@@ -286,6 +305,7 @@ function create(defaultState = {}) {
     setSilent,
     watch,
     watchAll,
+    watchOnce,
     unset,
     unwatch,
     unwatchAll,

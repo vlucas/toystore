@@ -503,6 +503,20 @@ describe('store', () => {
     });
   });
 
+  describe('watchOnce', () => {
+    it('should watch for changes only once, and then unwatch itself', () => {
+      let actual = 0;
+
+      store.watchOnce('foo', () => ++actual);
+      store.set('foo', 'baz');
+      store.set('foo', 'bax');
+
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
+  });
+
   describe('unset', () => {
     it('should unset key at path', () => {
       store.unset('foo');
