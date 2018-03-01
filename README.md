@@ -143,7 +143,7 @@ also want to remove all the watchers before using reset(), call
 store.reset({ is_cool: true, is_quality: true, user: false });
 ```
 
-### watch(paths, callback)
+### watch(paths, callback, options = {})
 
 Watch provided `paths` for changes, and execute `callback` when those values
 change.
@@ -159,6 +159,10 @@ store values after the triggered change.
 store.watch(['user'], updateUserInfo);
 store.watch(['mode'], changeMode);
 store.watch(['router.url'], (newValues) => navigateToPage(newValues.router.url));
+
+// With priorities (higher gets executed first)
+store.watch(['cart'], updateShoppingCart, { priority: 1 });
+store.watch(['cart'], updateShoppingCartCount, { priority: 10 });
 ```
 
 ### watchAll(callback)
@@ -169,6 +173,16 @@ multiple keys.
 
 ```javascript
 store.watchAll(renderApp); // Will execute when *any* key changes
+```
+
+### watchOnce(paths, callback, options = {})
+
+Similar to `watch`, but provided `callback` will only execute a single time,
+and then will `unwatch` itself automatically. Useful when chaining watchers, or
+when the watcher is created inside another function that is not always applied.
+
+```javascript
+store.watchOnce(['visit'], showUserPopupAd); // Will only execute ONCE
 ```
 
 ### unwatch(callback)
