@@ -1,6 +1,6 @@
 {
   "name": "toystore",
-  "version": "1.3.3",
+  "version": "1.5.0",
   "description": "Lightweight central store of state with the ability to watch for and react to specific property changes",
   "main": "es5/index.js",
   "scripts": {

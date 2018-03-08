@@ -515,6 +515,21 @@ describe('store', () => {
 
       expect(actual).toBe(expected);
     });
+
+    it('should not recurse in a loop when setting the key it is watching once', () => {
+      let actual = 0;
+
+      store.watchOnce('foo', () => {
+        store.set('foo', 'another value');
+        ++actual;
+      });
+      store.set('foo', 'baz');
+      store.set('foo', 'bax');
+
+      let expected = 1;
+
+      expect(actual).toBe(expected);
+    });
   });
 
   describe('unset', () => {
@@ -534,8 +549,20 @@ describe('store', () => {
 
       store.watch('foo', callback);
 
-      store.unwatch('foo', callback);
-      store.unwatch('foo', callback);
+      store.unwatch(callback);
+
+      let expected = 0;
+
+      expect(actual).toBe(expected);
+    });
+
+    it('should be able to unwatch by given id', () => {
+      let actual = 0;
+      let callback = () => ++actual;
+      let id = store.watch('foo', callback);
+
+      store.unwatch(id);
+      store.set('foo', 'buzz');
 
       let expected = 0;
 

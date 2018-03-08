@@ -23,6 +23,13 @@ function zipObject(keys, values) {
 }
 
 /**
+ * Generate random string
+ */
+function randomString(length) {
+  return (+new Date() * Math.random()).toString(36).substring(0, length || 12);
+}
+
+/**
  * Create and return a new store instance
  *
  * @param {Object} Initial store state
@@ -224,34 +231,31 @@ function create() {
    * @param {Function} callback to execute when there are changes
    * @param {Object} options Options
    * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
+   * @return {String} id of watcher (useful for unwatch())
    */
   function watch(paths, callback) {
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { priority: 0 };
 
-    paths = _pathsArray(paths);
+    paths = paths === '*' ? paths : _pathsArray(paths);
+    var id = randomString();
 
     watchers.push({
       callback: callback,
-      paths: paths,
-      options: options
+      id: id,
+      options: options,
+      paths: paths
     });
 
     watchers = watchers.sort(_sortByPriority);
+
+    return id;
   }
 
   /**
    * Watch ALL keys, and execute the provided callback on any and every key change
    */
-  function watchAll(callback) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { priority: 0 };
-
-    watchers.push({
-      callback: callback,
-      paths: '*',
-      options: options
-    });
-
-    watchers = watchers.sort(_sortByPriority);
+  function watchAll(callback, options) {
+    return watch('*', callback, options);
   }
 
   /**
@@ -267,12 +271,13 @@ function create() {
   function watchOnce(paths, callback) {
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { priority: 0 };
 
+    var id = void 0;
     var onceCallback = function _watchOnceCallback() {
+      unwatch(id);
       callback.apply(undefined, arguments);
-      unwatch(onceCallback);
     };
 
-    return watch(paths, onceCallback, options);
+    id = watch(paths, onceCallback, options);
   }
 
   /**
@@ -283,11 +288,14 @@ function create() {
   }
 
   /**
-   * Clear/remove specific watcher by callback function
+   * Clear/remove specific watcher by id or callback function
+   *
+   * @param {String|Function} id - String id (returned from watch() or callback function)
    */
-  function unwatch(callback) {
+  function unwatch(id) {
+    var type = typeof id === 'undefined' ? 'undefined' : _typeof(id);
     var index = watchers.findIndex(function _matchWatcher(watcher) {
-      return watcher && watcher.callback === callback;
+      return watcher && (type === 'string' ? watcher.id === id : watcher.callback === id);
     });
 
     if (index !== -1) {
@@ -453,7 +461,7 @@ function intersect(arr1, arr2) {
 module.exports = get;
 
 /*
-  var obj = {a: {aa: {aaa: 2}}, b: 4};
+  const obj = {a: {aa: {aaa: 2}}, b: 4};
 
   get(obj, 'a.aa.aaa'); // 2
   get(obj, ['a', 'aa', 'aaa']); // 2
@@ -466,14 +474,22 @@ module.exports = get;
 
   get(obj.b, 'bb.bbb'); // undefined
   get(obj.b, ['bb', 'bbb']); // undefined
+
+  const obj = {a: {}};
+  const sym = Symbol();
+  obj.a[sym] = 4;
+  get(obj.a, sym); // 4
 */
 
 function get(obj, props) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var prop;
-  while (prop = props.shift()) {
+  while ((prop = props.shift())) {
     obj = obj[prop];
     if (!obj) {
       return obj;
@@ -501,18 +517,26 @@ module.exports = set;
   var obj4 = {a: {aa: {aaa: 2}}};
   set(obj4, 'a.aa', {bbb: 7}); // true
   obj4; // {a: {aa: {bbb: 7}}}
+
+  const obj5 = {a: {}};
+  const sym = Symbol();
+  set(obj5.a, sym, 7); // true
+  obj5; // {a: {Symbol(): 7}}
 */
 
 function set(obj, props, value) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var lastProp = props.pop();
   if (!lastProp) {
     return false;
   }
   var thisProp;
-  while (thisProp = props.shift()) {
+  while ((thisProp = props.shift())) {
     if (!obj[thisProp]) {
       obj[thisProp] = {};
     }
