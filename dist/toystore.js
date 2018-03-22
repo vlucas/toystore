@@ -54,11 +54,6 @@ function create() {
       throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
     }
 
-    // Clone objects and arrays to prevent mutation
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
-      value = clone(value);
-    }
-
     return clone(value);
   }
 
@@ -461,7 +456,7 @@ function intersect(arr1, arr2) {
 module.exports = get;
 
 /*
-  const obj = {a: {aa: {aaa: 2}}, b: 4};
+  var obj = {a: {aa: {aaa: 2}}, b: 4};
 
   get(obj, 'a.aa.aaa'); // 2
   get(obj, ['a', 'aa', 'aaa']); // 2
@@ -474,22 +469,14 @@ module.exports = get;
 
   get(obj.b, 'bb.bbb'); // undefined
   get(obj.b, ['bb', 'bbb']); // undefined
-
-  const obj = {a: {}};
-  const sym = Symbol();
-  obj.a[sym] = 4;
-  get(obj.a, sym); // 4
 */
 
 function get(obj, props) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
-  if (typeof props == 'symbol') {
-    props = [props];
-  }
   var prop;
-  while ((prop = props.shift())) {
+  while (prop = props.shift()) {
     obj = obj[prop];
     if (!obj) {
       return obj;
@@ -517,26 +504,18 @@ module.exports = set;
   var obj4 = {a: {aa: {aaa: 2}}};
   set(obj4, 'a.aa', {bbb: 7}); // true
   obj4; // {a: {aa: {bbb: 7}}}
-
-  const obj5 = {a: {}};
-  const sym = Symbol();
-  set(obj5.a, sym, 7); // true
-  obj5; // {a: {Symbol(): 7}}
 */
 
 function set(obj, props, value) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
-  if (typeof props == 'symbol') {
-    props = [props];
-  }
   var lastProp = props.pop();
   if (!lastProp) {
     return false;
   }
   var thisProp;
-  while ((thisProp = props.shift())) {
+  while (thisProp = props.shift()) {
     if (!obj[thisProp]) {
       obj[thisProp] = {};
     }
