@@ -43,11 +43,6 @@ function create(defaultState = {}) {
       throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
     }
 
-    // Clone objects and arrays to prevent mutation
-    if (typeof value === 'object' && value !== null) {
-      value = clone(value);
-    }
-
     return clone(value);
   }
 
