@@ -19,6 +19,13 @@ function zipObject(keys, values) {
   }, {});
 }
 
+/**
+ * Generate random string
+ */
+function randomString(length) {
+  return (+new Date * Math.random()).toString(36).substring(0, length || 12);
+}
+
 
 /**
  * Create and return a new store instance
@@ -41,11 +48,6 @@ function create(defaultState = {}) {
 
     if (value === undefined) {
       throw new Error('[toystore] Requested store key "' + path + '" was not found in store.');
-    }
-
-    // Clone objects and arrays to prevent mutation
-    if (typeof value === 'object' && value !== null) {
-      value = clone(value);
     }
 
     return clone(value);
@@ -218,30 +220,29 @@ function create(defaultState = {}) {
    * @param {Function} callback to execute when there are changes
    * @param {Object} options Options
    * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
+   * @return {String} id of watcher (useful for unwatch())
    */
   function watch(paths, callback, options = { priority: 0 }) {
-    paths = _pathsArray(paths);
+    paths = paths === '*' ? paths : _pathsArray(paths);
+    let id = randomString();
 
     watchers.push({
       callback,
-      paths,
+      id,
       options,
+      paths,
     });
 
     watchers = watchers.sort(_sortByPriority);
+
+    return id;
   }
 
   /**
    * Watch ALL keys, and execute the provided callback on any and every key change
    */
-  function watchAll(callback, options = { priority: 0 }) {
-    watchers.push({
-      callback,
-      paths: '*',
-      options,
-    });
-
-    watchers = watchers.sort(_sortByPriority);
+  function watchAll(callback, options) {
+    return watch('*', callback, options);
   }
 
   /**
@@ -255,12 +256,13 @@ function create(defaultState = {}) {
    * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
    */
   function watchOnce(paths, callback, options = { priority: 0 }) {
+    let id;
     let onceCallback = function _watchOnceCallback(...args) {
+      unwatch(id);
       callback(...args);
-      unwatch(onceCallback);
     };
 
-    return watch(paths, onceCallback, options);
+    id = watch(paths, onceCallback, options);
   }
 
   /**
@@ -271,11 +273,14 @@ function create(defaultState = {}) {
   }
 
   /**
-   * Clear/remove specific watcher by callback function
+   * Clear/remove specific watcher by id or callback function
+   *
+   * @param {String|Function} id - String id (returned from watch() or callback function)
    */
-  function unwatch(callback) {
+  function unwatch(id) {
+    let type = typeof id;
     let index = watchers.findIndex(function _matchWatcher(watcher) {
-      return watcher && watcher.callback === callback;
+      return watcher && (type === 'string' ? watcher.id === id : watcher.callback === id);
     });
 
     if (index !== -1) {
