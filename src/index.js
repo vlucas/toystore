@@ -119,7 +119,7 @@ function create(defaultState = {}) {
         if (watcher.options.async !== false) {
           setTimeout(function() {
             watcher.callback(watchedKeyValues)
-          }, 0);
+          }, watcher.options.async || 0);
         } else {
           watcher.callback(watchedKeyValues);
         }

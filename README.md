@@ -54,7 +54,17 @@ const store = require('./mystore');
 store.watch(['user'], secondTask);
 store.watch(['user'], firstTask, { priority: 10 });
 store.watch(['user'], thirdTask, { priority: -1 });
+```
 
+Watchers can also be executed asynchronously after a short timeout instead of invoked immediately:
+```javascript
+const store = require('./mystore');
+
+// Executed async with setTimeout instead of immediately called
+store.watch(['user'], updateUserInfo, { async: true });
+
+// Executed async after provided milliseconds
+store.watch(['user'], updateUserInfoInOtherPlace, { async: 500 });
 ```
 
 
