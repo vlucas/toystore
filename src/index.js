@@ -21,6 +21,8 @@ function zipObject(keys, values) {
 
 /**
  * Generate random string
+ *
+ * @param {Number} length
  */
 function randomString(length) {
   return (+new Date * Math.random()).toString(36).substring(0, length || 12);
@@ -114,7 +116,13 @@ function create(defaultState = {}) {
           watchedKeyValues = getAll(paths);
         } catch (e) { }
 
-        watcher.callback(watchedKeyValues);
+        if (watcher.options.async !== false) {
+          setTimeout(function() {
+            watcher.callback(watchedKeyValues)
+          }, 0);
+        } else {
+          watcher.callback(watchedKeyValues);
+        }
       }
     });
 
@@ -219,12 +227,16 @@ function create(defaultState = {}) {
    * @param {String[]|String} String path or array of paths to watch
    * @param {Function} callback to execute when there are changes
    * @param {Object} options Options
+   * @param {Boolean} options.async Callback execution is async (in next cycle) or sync (as soon as the key changes)
    * @param {Number} options.priority Controls the order the provided callback is called when multiple watches exist on the same key.
    * @return {String} id of watcher (useful for unwatch())
    */
-  function watch(paths, callback, options = { priority: 0 }) {
+  function watch(paths, callback, options = {}) {
     paths = paths === '*' ? paths : _pathsArray(paths);
     let id = randomString();
+    let defaultOptions = { async: false, priority: 0 };
+
+    options = Object.assign({}, defaultOptions, options);
 
     watchers.push({
       callback,

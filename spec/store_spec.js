@@ -470,6 +470,20 @@ describe('store', () => {
 
       expect(actual).toBe(expected);
     });
+
+    it('should execute callbacks async when async option is set', (done) => {
+      let actual = 0;
+
+      store.watch(['foo'], () => actual++, { async: true });
+      store.set('foo', 2);
+
+      let expected = 1;
+
+      setTimeout(() => {
+        expect(actual).toBe(expected);
+        done();
+      }, 10);
+    });
   });
 
   describe('watchAll', () => {
