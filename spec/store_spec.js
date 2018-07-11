@@ -188,6 +188,26 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
 
+    it('should not set value if it is unchanged and compare is true', () => {
+      let spyCb = jasmine.createSpy('watch callback');
+
+      store.set('food', {test: 'test'});
+      store.watch('food', spyCb)
+      store.set('food', {test: 'test'}, true);
+
+      expect(spyCb).not.toHaveBeenCalled();
+    });
+
+    it('should set value if it is changed and compare is true', () => {
+      let spyCb = jasmine.createSpy('watch callback');
+
+      store.set('food', {test: 'test1'});
+      store.watch('food', spyCb)
+      store.set('food', {test: 'test2'}, true);
+
+      expect(spyCb).toHaveBeenCalled();
+    });
+
     it('should get the desired value for a nested key', () => {
       store.set('user.id', 2);
 
