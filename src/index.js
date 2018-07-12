@@ -146,7 +146,7 @@ function create(defaultState = {}) {
    * @param {Boolean} value
    * @return null
    */
-  function set(path, value, compare) {
+  function set(path, value, options = {}) {
     let paths = _pathsArray(path);
 
     // Get all paths to notify for updates if given an object
@@ -157,9 +157,9 @@ function create(defaultState = {}) {
       // changed to notify watchers on those keys
       if (_isObject(existingValue)) {
         
-        // If using compare = true.  JSON.strigify compare the two sets of data.
+        // If using options.compare = true.  JSON.strigify compare the two sets of data.
         // If they are exactly the same, abort the update.
-        if (compare) {
+        if (options.compare) {
           if (JSON.stringify(value) === JSON.stringify(existingValue)) {
             return;
           }

@@ -188,24 +188,37 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
 
-    it('should not set value if it is unchanged and compare is true', () => {
-      let spyCb = jasmine.createSpy('watch callback');
+    it('should not set value or trigger watch if value is same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
 
-      store.set('food', {test: 'test'});
-      store.watch('food', spyCb)
-      store.set('food', {test: 'test'}, true);
+      store.watch(['food'], () => ++count);
+      store.set('food', {test: 'original data'}, options);
+      store.set('food', {test: 'original data'}, options);
 
-      expect(spyCb).not.toHaveBeenCalled();
+      expect(count).toBe(1);
     });
 
-    it('should set value if it is changed and compare is true', () => {
-      let spyCb = jasmine.createSpy('watch callback');
+    it('should set value and trigger watch even if value is same as original, when options.compare is false', () => {
+      let count = 0;
+      let options = { compare: false }
 
-      store.set('food', {test: 'test1'});
-      store.watch('food', spyCb)
-      store.set('food', {test: 'test2'}, true);
+      store.watch(['food'], () => ++count);
+      store.set('food', {test: 'original data'}, options);
+      store.set('food', {test: 'original data'}, options);
 
-      expect(spyCb).toHaveBeenCalled();
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if value is changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', {test: 'original data'}, options);
+      store.set('food', {test: 'data has changed'}, options);
+
+      expect(count).toBe(2);
     });
 
     it('should get the desired value for a nested key', () => {
