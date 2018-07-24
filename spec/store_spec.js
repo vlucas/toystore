@@ -188,13 +188,68 @@ describe('store', () => {
       expect(actual).toBe(expected);
     });
 
-    it('should not set value or trigger watch if value is same as original and options.compare is true', () => {
+    it('should not set value or trigger watch if object is same as original and options.compare is true', () => {
       let count = 0;
       let options = { compare: true }
 
       store.watch(['food'], () => ++count);
       store.set('food', {test: 'original data'}, options);
       store.set('food', {test: 'original data'}, options);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not set value or trigger watch parent watcher if child values are the same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', {test: 'original data'}, options);
+      store.set('food.test', 'original data', options);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not set value or trigger watch if string is same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', 'test', options);
+      store.set('food', 'test', options);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not set value or trigger watch if boolean is same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', true, options);
+      store.set('food', true, options);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not set value or trigger watch if number is same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', 123, options);
+      store.set('food', 123, options);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not set value or trigger watch if array is same as original and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', [1, '2'], options);
+      store.set('food', [1, '2'], options);
 
       expect(count).toBe(1);
     });
@@ -210,13 +265,68 @@ describe('store', () => {
       expect(count).toBe(2);
     });
 
-    it('should set value and trigger watch if value is changed and options.compare is true', () => {
+    it('should set value and trigger watch for parent watcher if chlid values are changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', {test: 'original data'}, options);
+      store.set('food.test', 'newer data', options);
+
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if object is changed and options.compare is true', () => {
       let count = 0;
       let options = { compare: true }
 
       store.watch(['food'], () => ++count);
       store.set('food', {test: 'original data'}, options);
       store.set('food', {test: 'data has changed'}, options);
+
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if string is changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', 'test', options);
+      store.set('food', 'new test', options);
+
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if boolean is changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', true, options);
+      store.set('food', false, options);
+
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if number is changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', 123, options);
+      store.set('food', 1234, options);
+
+      expect(count).toBe(2);
+    });
+
+    it('should set value and trigger watch if array is changed and options.compare is true', () => {
+      let count = 0;
+      let options = { compare: true }
+
+      store.watch(['food'], () => ++count);
+      store.set('food', [1, 2], options);
+      store.set('food', [1, '2'], options);
 
       expect(count).toBe(2);
     });
