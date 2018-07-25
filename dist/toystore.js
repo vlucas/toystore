@@ -147,18 +147,33 @@ function create() {
    *
    * @param {String} path
    * @param {mixed} value
+   * @param {Boolean} value
    * @return null
    */
   function set(path, value) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     var paths = _pathsArray(path);
+    var existingValue = void 0;
+
+    // If using options.compare = true.  JSON.strigify compare the two sets of data.
+    // If they are exactly the same, abort the update.
+    if (options.compare) {
+      existingValue = getSilent(path);
+
+      if (JSON.stringify(value) === JSON.stringify(existingValue)) {
+        return;
+      }
+    }
 
     // Get all paths to notify for updates if given an object
     if (_isObject(value) === true) {
-      var existingValue = getSilent(path);
+      existingValue = existingValue || getSilent(path);
 
       // If previous value was also an object, we need to see which keys have
       // changed to notify watchers on those keys
       if (_isObject(existingValue)) {
+
         var oldKeys = _deepKeys(existingValue, path);
         var removedKeys = void 0;
 
@@ -468,7 +483,7 @@ function intersect(arr1, arr2) {
 module.exports = get;
 
 /*
-  var obj = {a: {aa: {aaa: 2}}, b: 4};
+  const obj = {a: {aa: {aaa: 2}}, b: 4};
 
   get(obj, 'a.aa.aaa'); // 2
   get(obj, ['a', 'aa', 'aaa']); // 2
@@ -481,14 +496,22 @@ module.exports = get;
 
   get(obj.b, 'bb.bbb'); // undefined
   get(obj.b, ['bb', 'bbb']); // undefined
+
+  const obj = {a: {}};
+  const sym = Symbol();
+  obj.a[sym] = 4;
+  get(obj.a, sym); // 4
 */
 
 function get(obj, props) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var prop;
-  while (prop = props.shift()) {
+  while ((prop = props.shift())) {
     obj = obj[prop];
     if (!obj) {
       return obj;
@@ -516,18 +539,26 @@ module.exports = set;
   var obj4 = {a: {aa: {aaa: 2}}};
   set(obj4, 'a.aa', {bbb: 7}); // true
   obj4; // {a: {aa: {bbb: 7}}}
+
+  const obj5 = {a: {}};
+  const sym = Symbol();
+  set(obj5.a, sym, 7); // true
+  obj5; // {a: {Symbol(): 7}}
 */
 
 function set(obj, props, value) {
   if (typeof props == 'string') {
     props = props.split('.');
   }
+  if (typeof props == 'symbol') {
+    props = [props];
+  }
   var lastProp = props.pop();
   if (!lastProp) {
     return false;
   }
   var thisProp;
-  while (thisProp = props.shift()) {
+  while ((thisProp = props.shift())) {
     if (!obj[thisProp]) {
       obj[thisProp] = {};
     }

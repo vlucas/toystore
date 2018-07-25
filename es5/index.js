@@ -146,18 +146,33 @@ function create() {
    *
    * @param {String} path
    * @param {mixed} value
+   * @param {Boolean} value
    * @return null
    */
   function set(path, value) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     var paths = _pathsArray(path);
+    var existingValue = void 0;
+
+    // If using options.compare = true.  JSON.strigify compare the two sets of data.
+    // If they are exactly the same, abort the update.
+    if (options.compare) {
+      existingValue = getSilent(path);
+
+      if (JSON.stringify(value) === JSON.stringify(existingValue)) {
+        return;
+      }
+    }
 
     // Get all paths to notify for updates if given an object
     if (_isObject(value) === true) {
-      var existingValue = getSilent(path);
+      existingValue = existingValue || getSilent(path);
 
       // If previous value was also an object, we need to see which keys have
       // changed to notify watchers on those keys
       if (_isObject(existingValue)) {
+
         var oldKeys = _deepKeys(existingValue, path);
         var removedKeys = void 0;
 
