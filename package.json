@@ -23,7 +23,7 @@
     "difference": "^1.0.2",
     "just-intersect": "^1.1.22",
     "just-safe-get": "^1.0.0",
-    "just-safe-set": "^1.0.0"
+    "just-safe-set": "^4.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
